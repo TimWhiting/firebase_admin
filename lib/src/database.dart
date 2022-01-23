@@ -22,7 +22,8 @@ class _AuthTokenProvider implements AuthTokenProvider {
   }
 
   @override
-  Stream<String?> get onTokenChanged {
+  // TODO: implement onTokenChanged
+  Stream<Future<String>?> get onTokenChanged {
     var controller = StreamController<String?>();
     var listener = (v) => controller.add(v);
 
@@ -31,8 +32,21 @@ class _AuthTokenProvider implements AuthTokenProvider {
     };
     controller.onCancel = () => internals.removeAuthTokenListener(listener);
 
-    return controller.stream;
+    return controller.stream.cast<Future<String>?>();
   }
+
+  // @override
+  // Stream<String?> get onTokenChanged {
+    // var controller = StreamController<String?>();
+    // var listener = (v) => controller.add(v);
+
+    // controller.onListen = () {
+    //   internals.addAuthTokenListener(listener);
+    // };
+    // controller.onCancel = () => internals.removeAuthTokenListener(listener);
+
+    // return controller.stream;
+  // }
 }
 
 /// Firebase Realtime Database service.
