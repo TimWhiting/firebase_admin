@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:dotenv/dotenv.dart';
 import 'package:openid_client/openid_client_io.dart';
-
+import 'package:http/http.dart' as http;
 import 'auth/credential.dart';
 import 'utils/error.dart';
 import 'package:path/path.dart' as path;
@@ -177,8 +177,7 @@ class Credentials {
       }
     }
 
-    // TODO Credential on compute engine
-    return null;
+    return ComputeEngineCredential();
   }
 
   static Credential _credentialFromFile(String filePath) {
@@ -223,6 +222,71 @@ class Credentials {
           'Failed to parse contents of the credentials file as an object: $error');
     }
   }
+}
+
+class ComputeEngineCredential implements Credential {
+  static const GOOGLE_METADATA_SERVICE_HOST = 'metadata.google.internal';
+  static const GOOGLE_METADATA_SERVICE_TOKEN_PATH =
+      '/computeMetadata/v1/instance/service-accounts/default/token';
+  static const GOOGLE_METADATA_SERVICE_PROJECT_ID_PATH =
+      '/computeMetadata/v1/project/project-id';
+
+  final httpClient = http.Client();
+
+  String? projectId;
+  ComputeEngineCredential();
+
+  Future<GoogleOAuthAccessToken> getAccessToken() {
+    return requestAccessToken(
+        httpClient,
+        Uri(
+            scheme: 'http',
+            host: GOOGLE_METADATA_SERVICE_HOST,
+            path: GOOGLE_METADATA_SERVICE_TOKEN_PATH),
+        {
+          'Metadata-Flavor': 'Google',
+        });
+  }
+
+  Future<String> getProjectId() async {
+    if (projectId != null) {
+      return Future.value(projectId);
+    }
+
+    final response = await httpClient.get(
+        Uri(
+            scheme: 'http',
+            host: GOOGLE_METADATA_SERVICE_HOST,
+            path: GOOGLE_METADATA_SERVICE_PROJECT_ID_PATH),
+        headers: {
+          'Metadata-Flavor': 'Google',
+        });
+
+    return response.body;
+  }
+}
+
+class GoogleOAuthAccessToken implements AccessToken {
+  GoogleOAuthAccessToken(this.accessToken, this.expirationTime);
+
+  /// The actual Google OAuth2 access token.
+  final String accessToken;
+
+  final DateTime expirationTime;
+}
+
+Future<GoogleOAuthAccessToken> requestAccessToken(
+    http.Client client, Uri uri, Map<String, String> headers) async {
+  final response = await client.get(uri, headers: headers);
+  final js = json.decode(response.body);
+
+  if (js['access_token'] == null || js['expires_in'] == null) {
+    throw FirebaseAppError(
+      'INVALID_CREDENTIAL',
+      'Unexpected response while fetching access token: ${js}',
+    );
+  }
+  return GoogleOAuthAccessToken(js['access_token'], js['expires_in']);
 }
 
 /// Interface which provides Google OAuth2 access tokens used to authenticate
