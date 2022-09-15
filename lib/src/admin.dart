@@ -6,7 +6,7 @@ import 'package:firebase_admin/src/utils/error.dart';
 import 'app.dart';
 import 'auth/credential.dart';
 import 'credential.dart';
-import 'package:dotenv/dotenv.dart';
+import 'env.dart';
 
 /// Provides access to Firebase Admin APIs.
 ///

@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:clock/clock.dart';
 import 'package:firebase_admin/src/auth/credential.dart';
 import 'package:firebase_admin/src/credential.dart';
+import 'package:firebase_admin/src/env.dart';
 import 'package:firebase_admin/src/testing.dart';
 import 'package:test/test.dart';
 
@@ -13,7 +14,6 @@ import 'package:firebase_admin/src/service.dart';
 import 'dart:async';
 import 'resources/mocks.dart' as mocks;
 import 'package:fake_async/fake_async.dart';
-import 'package:dotenv/dotenv.dart';
 
 import 'package:firebase_admin/src/app.dart';
 

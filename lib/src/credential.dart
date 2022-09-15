@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dotenv/dotenv.dart';
 import 'package:openid_client/openid_client_io.dart';
 import 'package:http/http.dart' as http;
 import 'auth/credential.dart';
+import 'env.dart';
 import 'utils/error.dart';
 import 'package:path/path.dart' as path;
 
@@ -236,6 +236,7 @@ class ComputeEngineCredential implements Credential {
   String? projectId;
   ComputeEngineCredential();
 
+  @override
   Future<GoogleOAuthAccessToken> getAccessToken() {
     return requestAccessToken(
         httpClient,
@@ -270,8 +271,10 @@ class GoogleOAuthAccessToken implements AccessToken {
   GoogleOAuthAccessToken(this.accessToken, this.expirationTime);
 
   /// The actual Google OAuth2 access token.
+  @override
   final String accessToken;
 
+  @override
   final DateTime expirationTime;
 }
 
@@ -283,7 +286,7 @@ Future<GoogleOAuthAccessToken> requestAccessToken(
   if (js['access_token'] == null || js['expires_in'] == null) {
     throw FirebaseAppError(
       'INVALID_CREDENTIAL',
-      'Unexpected response while fetching access token: ${js}',
+      'Unexpected response while fetching access token: $js',
     );
   }
   return GoogleOAuthAccessToken(js['access_token'], js['expires_in']);
