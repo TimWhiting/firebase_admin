@@ -289,7 +289,8 @@ Future<GoogleOAuthAccessToken> requestAccessToken(
       'Unexpected response while fetching access token: $js',
     );
   }
-  return GoogleOAuthAccessToken(js['access_token'], js['expires_in']);
+  return GoogleOAuthAccessToken(js['access_token'],
+      DateTime.fromMillisecondsSinceEpoch(int.parse(js['expires_in'])));
 }
 
 /// Interface which provides Google OAuth2 access tokens used to authenticate
